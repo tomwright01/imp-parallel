@@ -1,12 +1,8 @@
 import os
 import numpy as np
-import logging
 import argparse
-import time
 import multiprocessing
 import matplotlib.pyplot as plt
-# generic line to setup logging at module level
-logger = logging.getLogger(__name__)
 
 def normalise_and_plot_frame(frame_idx, frame_data, output_dir):
     """Function to normalise an image
@@ -37,7 +33,10 @@ def normalise_and_plot_frame(frame_idx, frame_data, output_dir):
     # use matplot lib to visualise the frame
     plt.imshow(frame_data)
     plt.gray()
-    plt.savefig(out_filepath)
+    try:
+        plt.savefig(out_filepath)
+    except IOError:
+        raise IOError("Failed to write output file: {}".format(out_filepath))
     plt.clf()
 
     #time.sleep(1)
@@ -108,6 +107,4 @@ if __name__ == '__main__':
             np.save(args.outputFile, output)
         except IOError:
             sys.exit('Failed to write output file: %s', args.outputFile)
-    
-    
-    
+            
