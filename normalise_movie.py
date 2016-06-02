@@ -42,6 +42,7 @@ def normalise_and_plot_frame(frame_idx, frame_data, output_dir):
     #time.sleep(1)
     return (frame_idx,frame_data)
     
+# python magic so it works when run as an app, but not when loaded in a module
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description = 'Convert a video file to numpy array')
     parser.add_argument('-i','--inputFile', required=True,
@@ -65,26 +66,25 @@ if __name__ == '__main__':
         try:
             os.makedirs(args.outputDir)
         except IOError:
-            sys.exit("Failed to create output dir: %s", args.outputDir)
+            sys.exit("Failed to create output dir: {}".format(args.outputDir))
     # try to load the data file    
     try:    
         data = np.load(args.inputFile)
     except IOError:
-        sys.exit('Failed to load file: %s', args.inputFile)
+        sys.exit('Failed to load file: {}'.format(args.inputFile))
         
     if len(data.shape) < 3:
         sys.exit('Expected an ndArray of shape nFrames x nRows x nCols')
-    
+
+    # preallocate the output array to the same shape as data
+    # with datatype unsigned integer
+    output = np.empty_like(data, dtype=np.uint8)    
         
     # start the process pool
     pool = multiprocessing.Pool(args.numProcessors)
     
     # Build task list
     tasks = []
-    
-    # preallocate the output array to the same shape as data
-    # with datatype unsigned integer
-    output = np.empty_like(data, dtype=np.uint8)
     
     frame_idx = 0
     for frame_idx in range(data.shape[0]):
@@ -106,5 +106,4 @@ if __name__ == '__main__':
         try:
             np.save(args.outputFile, output)
         except IOError:
-            sys.exit('Failed to write output file: %s', args.outputFile)
-            
+            sys.exit('Failed to write output file: {}'.format(args.outputFile))
